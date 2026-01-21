@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
 
 WORKDIR /app
 
+# 安裝時區資料
+RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
+
 # 複製依賴檔案
 COPY requirements.txt .
 
