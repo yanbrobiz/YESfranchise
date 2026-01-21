@@ -1,0 +1,19 @@
+# Cookie 檔案（包含敏感資訊）
+cookies.json
+cookies_env.txt
+
+# 執行紀錄和截圖
+execution_log.txt
+*.png
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
