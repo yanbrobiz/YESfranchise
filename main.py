@@ -6,16 +6,15 @@ Yes!加盟 自動化排程主程式
 import os
 import signal
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
-import pytz
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from auto_click import run_automation, log_message
 
-# 台北時區
-TZ_TAIPEI = pytz.timezone("Asia/Taipei")
+# 台北時區 (UTC+8)
+TZ_TAIPEI = timezone(timedelta(hours=8))
 
 
 def scheduled_job():
@@ -53,14 +52,15 @@ def main():
         log_message("偵測到 RUN_NOW 參數，立即執行一次")
         run_once()
 
-    # 建立排程器
-    scheduler = BlockingScheduler(timezone=TZ_TAIPEI)
+    # 建立排程器 (使用 UTC)
+    scheduler = BlockingScheduler(timezone="UTC")
 
-    # 設定每天 00:01 執行
-    trigger = CronTrigger(hour=0, minute=1, timezone=TZ_TAIPEI)
+    # 台北 00:01 = UTC 16:01 (前一天)
+    # 所以設定 UTC 16:01
+    trigger = CronTrigger(hour=16, minute=1, timezone="UTC")
     scheduler.add_job(scheduled_job, trigger, id="daily_click", name="每日分館搶先排序")
 
-    log_message("排程已設定: 每天 00:01 (台北時間) 執行")
+    log_message("排程已設定: 每天 00:01 (台北時間) / 16:01 (UTC) 執行")
     log_message("服務運行中，等待排程觸發...")
     log_message("=" * 50)
 
