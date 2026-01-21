@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
 
 WORKDIR /app
 
+# 關閉 Python 輸出緩衝，確保日誌即時顯示
+ENV PYTHONUNBUFFERED=1
+
 # 複製依賴檔案
 COPY requirements.txt .
 
@@ -12,4 +15,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 執行主程式
-CMD ["python", "main.py"]
+CMD ["python", "-u", "main.py"]
