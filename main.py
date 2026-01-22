@@ -12,6 +12,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from auto_click import run_automation, log_message
+from notify import notify_failure
 
 # 台北時區 (UTC+8)
 TZ_TAIPEI = timezone(timedelta(hours=8))
@@ -26,8 +27,10 @@ def scheduled_job():
             log_message("排程任務成功完成")
         else:
             log_message("排程任務執行失敗")
+            notify_failure("自動化執行失敗，請查看日誌了解詳情")
     except Exception as e:
         log_message(f"排程任務發生錯誤: {e}")
+        notify_failure(str(e))
 
 
 def run_once():
