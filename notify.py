@@ -51,6 +51,12 @@ def send_telegram_message(message: str) -> bool:
         return False
 
 
+def notify_success():
+    """發送執行成功通知"""
+    message = "✅ Yes!加盟 自動化執行成功！分館搶先排序已完成。"
+    send_telegram_message(message)
+
+
 def notify_failure(error_message: str):
     """
     發送執行失敗通知
