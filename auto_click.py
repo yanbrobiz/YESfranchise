@@ -85,29 +85,41 @@ def run_automation(headless: bool = True):
             log_message(f"正在前往會員頁面: {MEMBER_URL}")
             page.goto(MEMBER_URL, wait_until="networkidle")
 
-            # 確認是否成功進入會員頁面（檢查是否有登出按鈕或會員內容）
-            # 如果 Cookie 過期，可能會被重導向到登入頁面
+            # 確認是否成功登入：未登入時造訪 member.php 不會重導向，
+            # 而是直接顯示「請先登入會員後再查看我的收藏」等提示，URL 不變。
+            # 因此必須檢查頁面內容，而不只是 URL。
             if "member.php" not in page.url:
-                log_message("錯誤: Cookie 可能已過期，請重新執行 save_cookies.py")
+                log_message("錯誤: 未停留在會員頁面，Cookie 可能已過期")
                 browser.close()
                 return False
 
-            log_message("成功進入會員頁面")
-
-            # 等待頁面完全載入
             page.wait_for_load_state("networkidle")
+            try:
+                body_text = page.inner_text("body")
+            except Exception:
+                body_text = ""
+
+            if "請先登入" in body_text or "登出" not in body_text:
+                log_message("錯誤: Cookie 已過期（頁面顯示未登入狀態）")
+                log_message("請在本地重新執行 save_cookies.py 取得新 Cookie，並更新 Railway 的 YESALLY_COOKIES 環境變數")
+                screenshot_path = SCRIPT_DIR / f"debug_not_logged_in_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+                page.screenshot(path=str(screenshot_path))
+                log_message(f"已儲存除錯截圖: {screenshot_path}")
+                browser.close()
+                return False
+
+            log_message("成功進入會員頁面（已登入）")
 
             # 尋找並點擊「分館搶先排序」按鈕
-            # 根據截圖，按鈕文字為「分館搶先排序」
             log_message("尋找「分館搶先排序」按鈕...")
 
-            # 嘗試多種選擇器
+            # 2026-05 網站改版後，按鈕為帶有 .js-sort-branch class 的 <button>
+            # 主要 selector 用 class，文字版作為防禦性備援
             selectors = [
-                "text=分館搶先排序",
-                "a:has-text('分館搶先排序')",
+                "button.js-sort-branch",
+                ".js-sort-branch",
                 "button:has-text('分館搶先排序')",
-                "[onclick*='分館']",
-                "text=搶先排序",
+                "text=分館搶先排序",
             ]
 
             button_found = False
